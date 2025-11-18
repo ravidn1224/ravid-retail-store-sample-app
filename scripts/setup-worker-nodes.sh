@@ -43,8 +43,8 @@ fi
 echo "Joining the Kubernetes cluster..."
 
 
-sudo kubeadm join 10.0.1.138:6443 --token g68ely.m4c8th3d4iabs7d7 \
-        --discovery-token-ca-cert-hash sha256:f03f109bd1150ba1697744bc8b25a6134f71c1c196fc8b49a1db98afb14810b8
+# sudo kubeadm join <CONTROL-PLANE-IP>:6443 --token <TOKEN> \
+#     --discovery-token-ca-cert-hash <HASH>
 
 echo "Worker node joined the cluster successfully!"
 echo "You can verify this on the control plane with: kubectl get nodes"
