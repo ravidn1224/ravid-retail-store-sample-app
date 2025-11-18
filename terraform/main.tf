@@ -36,3 +36,16 @@ module "ec2" {
   worker_instance_type        = var.worker_instance_type
   worker_count                = var.worker_count
 }
+
+module "alb" {
+  source              = "./modules/alb"
+
+  name                = var.project_name
+  vpc_id              = module.vpc.vpc_id
+  public_subnets      = module.vpc.public_subnet_ids
+  worker_instance_ids = module.ec2.worker_instance_ids
+
+  target_port         = 30080
+  health_check_path   = "/health"
+}
+

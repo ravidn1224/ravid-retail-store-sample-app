@@ -1,0 +1,22 @@
+image:
+  repository: 630019796862.dkr.ecr.eu-central-1.amazonaws.com/ravid-retail-store-ui
+  tag: "latest"
+
+service:
+  port: 8080
+
+httpRoute:
+  enabled: false
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "512Mi"
+    cpu: "250m"
+env:
+  CATALOG_URL: "http://catalog.default.svc.cluster.local:8080"
+  CART_URL: "http://cart.default.svc.cluster.local:8080"
+  ORDERS_URL: "http://orders.default.svc.cluster.local:8080"
+  CHECKOUT_URL: "http://checkout.default.svc.cluster.local:8080"

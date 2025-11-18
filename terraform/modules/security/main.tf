@@ -32,6 +32,12 @@ resource "aws_security_group" "control_plane" {
     protocol = "tcp" 
     cidr_blocks = ["0.0.0.0/0"] 
   }
+    ingress { 
+  from_port = 179
+  to_port = 179 
+  protocol = "tcp" 
+  cidr_blocks = ["0.0.0.0/0"] 
+  }
 
   ingress { 
     from_port = 2379 
@@ -82,6 +88,12 @@ resource "aws_security_group" "worker" {
     protocol = "tcp" 
     cidr_blocks = ["0.0.0.0/0"] 
     }
+  ingress { 
+  from_port = 179
+  to_port = 179 
+  protocol = "tcp" 
+  cidr_blocks = ["0.0.0.0/0"] 
+  }
   ingress { 
     from_port = 30000 
     to_port = 32767 

@@ -1,0 +1,22 @@
+image:
+  repository: 630019796862.dkr.ecr.eu-central-1.amazonaws.com/ravid-retail-store-checkout
+  tag: "latest"
+
+service:
+  port: 8080
+
+httpRoute:
+  enabled: false
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "100m"
+env:
+  RABBITMQ_HOST: "rabbitmq.default.svc.cluster.local"
+  RABBITMQ_USER: "admin"
+  RABBITMQ_PASSWORD: "admin"
+

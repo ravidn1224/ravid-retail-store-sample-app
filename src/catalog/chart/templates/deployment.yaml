@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "catalog.fullname" . }}
+  labels:
+    app: {{ include "catalog.name" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "catalog.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "catalog.name" . }}
+    spec:
+      containers:
+      - name: catalog
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        resources:
+          requests:
+            memory: {{ .Values.resources.requests.memory }}
+            cpu: {{ .Values.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.service.port }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.service.port }}
+env:
+- name: DB_HOST
+  value: {{ .Values.env.DB_HOST | quote }}
+- name: DB_PORT
+  value: {{ .Values.env.DB_PORT | quote }}
+- name: DB_USER
+  value: {{ .Values.env.DB_USER | quote }}
+- name: DB_PASSWORD
+  value: {{ .Values.env.DB_PASSWORD | quote }}

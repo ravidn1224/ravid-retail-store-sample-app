@@ -78,3 +78,4 @@ resource "aws_instance" "workers" {
 
 output "control_plane_public_ip" { value = aws_instance.control_plane.public_ip }
 output "worker_public_ips"       { value = [for i in aws_instance.workers : i.public_ip] }
+output "worker_instance_ids"     { value = [for i in aws_instance.workers : i.id]}

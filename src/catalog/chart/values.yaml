@@ -1,0 +1,22 @@
+image:
+  repository: 630019796862.dkr.ecr.eu-central-1.amazonaws.com/ravid-retail-store-catalog
+  tag: "latest"
+
+service:
+  port: 8080
+
+httpRoute:
+  enabled: false
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "100m"
+env:
+  DB_HOST: "postgresql.default.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_USER: "postgres"
+  DB_PASSWORD: "postgres"

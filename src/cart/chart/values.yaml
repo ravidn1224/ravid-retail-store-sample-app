@@ -1,0 +1,20 @@
+image:
+  repository: 630019796862.dkr.ecr.eu-central-1.amazonaws.com/ravid-retail-store-cart
+  tag: "latest"
+
+service:
+  port: 8080
+
+httpRoute:
+  enabled: false
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "512Mi"
+    cpu: "250m"
+env:
+  REDIS_HOST: "redis-master.default.svc.cluster.local"
+  DYNAMODB_HOST: "dynamodb.default.svc.cluster.local"

@@ -1,0 +1,15 @@
+image:
+  repository: 630019796862.dkr.ecr.eu-central-1.amazonaws.com/ravid-retail-store-orders
+  tag: "latest"
+
+service:
+  port: 8080
+httpRoute:
+  enabled: false
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "512Mi"
+    cpu: "250m"
