@@ -1,0 +1,139 @@
+name: Build and Deploy to ECR
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - '.github/workflows/build-and-deploy.yml'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+jobs:
+
+  detect-changes:
+    name: Detect changed services
+    runs-on: ubuntu-latest
+    outputs:
+      changed_services: ${{ steps.set-matrix.outputs.changed_services }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changes in src/*
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            ui:
+              - 'src/ui/**'
+            catalog:
+              - 'src/catalog/**'
+            cart:
+              - 'src/cart/**'
+            orders:
+              - 'src/orders/**'
+            checkout:
+              - 'src/checkout/**'
+
+      - name: Build JSON matrix
+        id: set-matrix
+        run: |
+          changed=()
+
+          if [ "${{ steps.filter.outputs.ui }}" = "true" ]; then
+            changed+=("\"ui\"")
+          fi
+
+          if [ "${{ steps.filter.outputs.catalog }}" = "true" ]; then
+            changed+=("\"catalog\"")
+          fi
+
+          if [ "${{ steps.filter.outputs.cart }}" = "true" ]; then
+            changed+=("\"cart\"")
+          fi
+
+          if [ "${{ steps.filter.outputs.orders }}" = "true" ]; then
+            changed+=("\"orders\"")
+          fi
+
+          if [ "${{ steps.filter.outputs.checkout }}" = "true" ]; then
+            changed+=("\"checkout\"")
+          fi
+
+          if [ ${#changed[@]} -eq 0 ]; then
+            echo 'changed_services={"include":[]}' >> $GITHUB_OUTPUT
+          else
+            json='{"include":['
+            first=true
+            for svc in "${changed[@]}"; do
+              if [ "$first" = true ]; then
+                first=false
+              else
+                json+=','
+              fi
+              json+="{\"service\":${svc}}"
+            done
+            json+=']}'
+            echo "changed_services=$json" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-push:
+    name: Build & Push Docker Images to ECR
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-changes.outputs.changed_services) }}
+
+    if: ${{ fromJson(needs.detect-changes.outputs.changed_services).include != '' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image variables
+        id: vars
+        run: |
+          SERVICE="${{ matrix.service }}"
+          REPO="retail-store-${SERVICE}"
+          IMAGE="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO}"
+          echo "IMAGE=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "REPO=${REPO}" >> $GITHUB_OUTPUT
+
+      - name: Set build context
+        id: buildctx
+        run: |
+          SERVICE="${{ matrix.service }}"
+          CTX="src/${SERVICE}"
+          DF="src/${SERVICE}/Dockerfile"
+          echo "CTX=${CTX}" >> $GITHUB_OUTPUT
+          echo "DF=${DF}" >> $GITHUB_OUTPUT
+
+      - name: Build and Push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ steps.buildctx.outputs.CTX }}
+          file: ${{ steps.buildctx.outputs.DF }}
+          push: true
+          tags: |
+            ${{ steps.vars.outputs.IMAGE }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.repository }}
