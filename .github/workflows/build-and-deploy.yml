@@ -73,7 +73,8 @@ jobs:
           for SERVICE in ${{ steps.changes.outputs.services }}; do
             echo "Building $SERVICE..."
 
-            IMAGE="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/retail-store-$SERVICE"
+            IMAGE="${{ secrets.ECR_REGISTRY }}/retail-store-$SERVICE"
+
 
             docker build -t $IMAGE:${{ github.sha }} src/$SERVICE
             docker push $IMAGE:${{ github.sha }}
