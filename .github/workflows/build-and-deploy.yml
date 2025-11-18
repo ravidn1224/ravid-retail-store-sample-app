@@ -1,4 +1,4 @@
-name: Simple CI/CD to ECR (No Matrix)
+name: CI/CD to ECR
 
 on:
   push:
